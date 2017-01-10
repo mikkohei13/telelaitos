@@ -5,8 +5,11 @@ const keys = require('../keys.js');
 
 let parameters = {};
 
-function getUploads(data, params) {
-	parameters = params;
+function init(params) {
+	parameters = params; // move params to module's global scope
+}
+
+function getUploads(data) {
 //	console.log(data);
 
 	let plaintext = formatAsPlaintext(data);
@@ -17,7 +20,7 @@ function getUploads(data, params) {
 	return "Done getting uploads!";
 }
 
-function getVihkolatest(data, params) {
+function getVihkolatest(data) {
 	parameters = params;
 
 	console.log(data);
@@ -60,13 +63,18 @@ function sendToTelegram(message) {
 	if (sendToTelegram) {
 		slimbot.sendMessage('@lajifi', message).then(reply => {
 		  console.log(reply);
+		  parameters.response.end("Done sending to Telegram.");
 		});
 	}
-
-	console.log("Messaged Telegram: " + message);
+	else
+	{
+		console.log("Debug mode, did not send this to Telegram:\n" + message);
+		parameters.response.end("Done debugging.");
+	}
 }
 
 module.exports = {
 	getVihkolatest : getVihkolatest,
-	getUploads : getUploads
+	getUploads : getUploads,
+	init : init
 };
