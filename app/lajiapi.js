@@ -5,7 +5,7 @@ const lajiTelegram = require('./lajitelegram');
 const keys = require('../keys.js');
 
 let response;
-let requestType;
+let parameters = {};
 
 // Decides what to do with the query
 function handleQuery(serverRequest, serverResponse) {
@@ -14,7 +14,7 @@ function handleQuery(serverRequest, serverResponse) {
 
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == serverRequest.url) {
-	  requestType = "getVihkolatest";
+	  parameters.requestType = "getVihkolatest";
 	  get({
 	    host: host,
 	    path: '' + keys.lajiToken
@@ -22,10 +22,11 @@ function handleQuery(serverRequest, serverResponse) {
 	}
 
 	else if ("/uploads" == serverRequest.url) {
-	  requestType = "getUploads";
+	  parameters.requestType = "getUploads";
+	  parameters.sinceDate = "2017-01-10";
 	  get({
 	    host: host,
-	    path: '/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=2017-01-06&access_token=' + keys.lajiToken
+	    path: "/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=" + parameters.sinceDate + "&access_token=" + keys.lajiToken
 	  });
 	}
 
@@ -50,7 +51,7 @@ function handleAPIResponseStream(apiResponse) {
 
     apiResponse.on('end', function() {
    		let data = JSON.parse(body);
-    	let responseData = lajiTelegram[requestType](data); // call a module function based on variable - no additional if/else needed!
+    	let responseData = lajiTelegram[parameters.requestType](data, parameters); // call a module function based on variable - no additional if/else needed!
     	response.end(responseData);
     });
 }
