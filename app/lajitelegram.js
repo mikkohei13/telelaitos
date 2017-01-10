@@ -27,6 +27,12 @@ function getVihkolatest(data) {
 function formatAsPlaintext(data) {
 	console.log(data);
 
+	for (let i = 0; i < data.results.length; i++) {
+		let item = data.results[i];
+    	let collection = item.aggregateBy["document.collectionId"];
+    	let count      = item.count;
+    	console.log(i + ". " + collection + ": " + count);
+    }
 
 	return "FAKE DATA";
 }
