@@ -3,20 +3,20 @@ const keys = require('../keys.js');
 
 // lajitelegram module
 
-function getLatest(data) {
-	console.log(data);
+function getUploads(data) {
+//	console.log(data);
 
 	let plaintext = formatAsPlaintext(data);
 	let message = wrapToMessage(plaintext);
 
 	sendToTelegram(message);
 
-	return "Done getting latest!";
+	return "Done getting uploads!";
 }
 
-function getUploads(data) {
+function getVihkolatest(data) {
 	console.log(data);
-	return "Done getting uploads!";
+	return "Done getting Vihkolatest!";
 }
 
 // --------------------------------------------------------
@@ -25,7 +25,9 @@ function getUploads(data) {
 // Formats the object-data into a human-readable plaintext
 // This is the data processing-meat!
 function formatAsPlaintext(data) {
-	// if ("latest" == myOptions.type) {}
+	console.log(data);
+
+
 	return "FAKE DATA";
 }
 
@@ -48,6 +50,6 @@ function sendToTelegram(message) {
 }
 
 module.exports = {
-	getLatest : getLatest,
+	getVihkolatest : getVihkolatest,
 	getUploads : getUploads
 };

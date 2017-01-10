@@ -13,16 +13,16 @@ function handleQuery(serverRequest, serverResponse) {
 	let host = 'api.laji.fi';
 
 	// Router - decides what to do based on URL
-	if ("/uploads" == serverRequest.url) {
-	  requestType = "getUploads";
+	if ("/vihkolatest" == serverRequest.url) {
+	  requestType = "getVihkolatest";
 	  get({
 	    host: host,
 	    path: '' + keys.lajiToken
 	  });
 	}
 
-	else if ("/latest" == serverRequest.url) {
-	  requestType = "getLatest";
+	else if ("/uploads" == serverRequest.url) {
+	  requestType = "getUploads";
 	  get({
 	    host: host,
 	    path: '/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=2017-01-06&access_token=' + keys.lajiToken
