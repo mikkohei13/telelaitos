@@ -2,6 +2,7 @@
 // Todo: api -> url
 
 const https = require('https');
+const keys = require('../keys.js');
 
 let parameters = {};
 
@@ -11,8 +12,8 @@ function init(params) {
 
 function getDataFromAPI(APIpath, localCallback) {
 	let options = {
-		host: parameters.APIhost,
-		path: (APIpath + "&access_token=" + parameters.APItoken)
+		host: 'api.laji.fi',
+		path: (APIpath + "&access_token=" + keys.lajiToken)
 	}
 
 	https.get(options, function handleAPIResponseStream(apiResponse) {
