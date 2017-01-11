@@ -3,7 +3,18 @@
 
 const https = require('https');
 
-function getDataFromAPI(options, callback) {
+let parameters = {};
+
+function init(params) {
+	parameters = params; // move params to module's global scope
+}
+
+function getDataFromAPI(APIpath, localCallback) {
+	let options = {
+		host: parameters.APIhost,
+		path: (APIpath + "&access_token=" + parameters.APItoken)
+	}
+
 	https.get(options, function handleAPIResponseStream(apiResponse) {
 		let body = '';
 
@@ -13,7 +24,9 @@ function getDataFromAPI(options, callback) {
 
 	    apiResponse.on('end', function() {
 	   		let data = JSON.parse(body);
-	   		callback(data);
+	   		console.log("data: " + JSON.stringify(data));
+	   		localCallback(null, data); // First argument is error
+
 //	    	let responseData = lajiTelegram[parameters.requestType](data, parameters); // call a module function based on variable - no additional if/else needed!
 //	    	parameters.response.end(responseData);
 	    });
@@ -30,5 +43,6 @@ function handleAPIError(error) {
 }
 
 module.exports = {
-	get: getDataFromAPI
+	get: getDataFromAPI,
+	init: init
 }

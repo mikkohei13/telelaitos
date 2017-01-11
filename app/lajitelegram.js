@@ -7,24 +7,29 @@ let parameters = {};
 
 function init(params) {
 	parameters = params; // move params to module's global scope
+//	console.log("Initialized lajiTelegram with parameters:");
+//	console.log(parameters);
 }
 
 function getUploads(data) {
 //	console.log(data);
 
+// ABBA
+/*
+		get.get(
+	    	("/v0/collections?langFallback=true&pageSize=1000" + parameters.sinceDate),
+	  		lajiTelegram.getUploads
+	  	);
+*/
+
 	let plaintext = formatAsPlaintext(data);
 	let message = wrapToMessage(plaintext);
 
 	sendToTelegram(message);
-
-	return "Done getting uploads!";
 }
 
 function getVihkolatest(data) {
-	parameters = params;
 
-	console.log(data);
-	return "Done getting Vihkolatest!";
 }
 
 // --------------------------------------------------------
@@ -33,12 +38,11 @@ function getVihkolatest(data) {
 // Formats the object-data into a human-readable plaintext
 // This is the data processing-meat!
 function formatAsPlaintext(data) {
-	console.log(data);
 	let plaintext = "";
 	let suffix = " records";
 
 	for (let i = 0; i < data.results.length; i++) {
-		let item = data.results[i];
+		let item       = data.results[i];
     	let collection = item.aggregateBy["document.collectionId"];
     	let count      = item.count;
 //    	console.log(i + ". " + collection + ": " + count);
