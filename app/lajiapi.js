@@ -1,4 +1,5 @@
 // lajiapi module
+
 const url = require('url');
 const parallel = require('async/parallel');
 const Slimbot = require('slimbot');
@@ -7,6 +8,9 @@ const keys = require('../keys.js');
 
 let parameters = {};
 
+// --------------------------------------------------------------------
+// Routing, API queries
+
 // Decides what to do with the query
 function handleQuery(serverRequest, serverResponse) {
 	parameters.response = serverResponse; // Makes this available to the whole module
@@ -14,7 +18,7 @@ function handleQuery(serverRequest, serverResponse) {
 
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == serverRequest.url) {
-	  parameters.requestType = "getVihkolatest";
+		parameters.requestType = "getVihkolatest";
 	}
 
 	else if ("/uploads" == serverRequest.url) {
@@ -24,16 +28,16 @@ function handleQuery(serverRequest, serverResponse) {
 		parallel({
 			uploads: function(callback) {
 				get.get(
-			    	("/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=" + parameters.sinceDate),
-			  		callback
-			  	);
+					("/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=" + parameters.sinceDate),
+					callback
+				);
 			},
-		    collections: function(callback) {
+			collections: function(callback) {
 				get.get(
-			    	("/v0/collections?lang=fi&langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
-			  		callback
-			  	);
-		    }
+					("/v0/collections?lang=fi&langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
+					callback
+				);
+			}
 		},
 		function(err, results) {
 //			console.log(results); // ABBA: 
@@ -49,6 +53,7 @@ function handleQuery(serverRequest, serverResponse) {
 }
 
 // --------------------------------------------------------------------
+// Process data
 
 function getUploads(data) {
 	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
@@ -61,7 +66,7 @@ function getVihkolatest(data) {
 }
 
 // --------------------------------------------------------------------
-
+// Format getUploads
 
 // Prepares collection names into an object
 function getCollectionsQueryObject(data) {
@@ -74,7 +79,6 @@ function getCollectionsQueryObject(data) {
 	return collectionsQueryObj;
 }
 
-
 // Formats the object-data into a human-readable plaintext
 function getUploadsPlaintext(data, collectionsQueryObj) {
 	let plaintext = "";
@@ -82,15 +86,13 @@ function getUploadsPlaintext(data, collectionsQueryObj) {
 
 	for (let i = 0; i < data.results.length; i++) {
 		let item = data.results[i];
-    	let collectionId = item.aggregateBy["document.collectionId"];
-    	let collectionName = collectionsQueryObj[collectionId];
-    	let count = item.count;
+		let collectionId = item.aggregateBy["document.collectionId"];
+		let collectionName = collectionsQueryObj[collectionId];
+		let count = item.count;
 
-//    	console.log(i + ". " + collection + ": " + count);
-    	plaintext += (i+1) + ". " + collectionName + ": " + count + suffix + "\n";
-    	suffix = "";
-    }
-
+		plaintext += (i+1) + ". " + collectionName + ": " + count + suffix + "\n";
+		suffix = "";
+	}
 	return plaintext;
 }
 
@@ -98,6 +100,10 @@ function getUploadsPlaintext(data, collectionsQueryObj) {
 function wrapToMessage(text) {
 	return "Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " alkaen: \n" + text + "";
 }
+
+// --------------------------------------------------------------------
+// Telegram
+// TODO: ->module
 
 function sendToTelegram(message) {
 //	const Slimbot = require('slimbot');
@@ -117,7 +123,6 @@ function sendToTelegram(message) {
 	}
 }
 
-
 function getDateYesterday() {
 	let date = new Date();
 	let day = date.getDate();
@@ -127,6 +132,7 @@ function getDateYesterday() {
 }
 
 // --------------------------------------------------------------------
+// Exports
 
 module.exports = {
 	handleQuery : handleQuery
