@@ -30,7 +30,7 @@ function handleQuery(serverRequest, serverResponse) {
 			},
 		    collections: function(callback) {
 				get.get(
-			    	("/v0/collections?langFallback=true&pageSize=2"), // 1000
+			    	("/v0/collections?langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
 			  		callback
 			  	);
 		    }
@@ -51,29 +51,31 @@ function handleQuery(serverRequest, serverResponse) {
 // --------------------------------------------------------------------
 
 function getUploads(data) {
-//	console.log(data);
+//	console.log(data.collections);
 
-// ABBA
-/*
-		get.get(
-	    	("/v0/collections?langFallback=true&pageSize=1000" + parameters.sinceDate),
-	  		lajiTelegram.getUploads
-	  	);
-*/
+	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
+	console.log(collectionsQueryObj);
 
-	let plaintext = formatAsPlaintext(data.uploads);
-	let message = wrapToMessage(plaintext);
-
-	sendToTelegram(message);
+//	let plaintext = formatAsPlaintext(data.uploads);
+//	let message = wrapToMessage(plaintext);
+//	sendToTelegram(message);
 }
 
 function getVihkolatest(data) {
-
 }
 
 // --------------------------------------------------------------------
 
-// Todo: UNFAKE
+function getCollectionsQueryObject(data) {
+	let collectionObj = {};
+	for (let i = 0; i < data.results.length; i++) {
+		let item = data.results[i];
+		collectionObj[item.id] = item.collectionName;
+	}
+	return collectionObj;
+}
+
+
 // Formats the object-data into a human-readable plaintext
 // This is the data processing-meat!
 function formatAsPlaintext(data) {
