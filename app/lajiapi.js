@@ -19,15 +19,7 @@ function handleQuery(serverRequest, serverResponse) {
 
 	else if ("/uploads" == serverRequest.url) {
 		parameters.requestType = "getUploads";
-
-		let date = new Date();
-		let day = date.getDate();
-		let month = date.getMonth() + 1;
-		let year = date.getFullYear();
-
-		parameters.sinceDate = "2017-01-09"; // Todo automatic
-		parameters.sinceDate = year + "-" + month + "-" + day; // Todo automatic
-		console.log(parameters.sinceDate);
+		parameters.sinceDate = getDateYesterday();
 
 		parallel({
 			uploads: function(callback) {
@@ -115,18 +107,24 @@ function sendToTelegram(message) {
 	if (sendToTelegram) {
 		slimbot.sendMessage('@lajifi', message).then(reply => {
 		  console.log(reply);
-		  parameters.response.end("Done sending to Telegram.");
+		  parameters.response.end("Done sending to Telegram. (" + message.length + " characters)");
 		});
 	}
 	else
 	{
 		console.log("Debug mode, did not send this to Telegram:\n" + message);
-		parameters.response.end("Done debugging.");
+		parameters.response.end("Done debugging. (" + message.length + " characters)");
 	}
 }
 
 
-
+function getDateYesterday() {
+	let date = new Date();
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear();
+	return (year + "-" + month + "-" + day);
+}
 
 // --------------------------------------------------------------------
 
