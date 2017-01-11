@@ -19,7 +19,15 @@ function handleQuery(serverRequest, serverResponse) {
 
 	else if ("/uploads" == serverRequest.url) {
 		parameters.requestType = "getUploads";
-		parameters.sinceDate = "2017-01-11"; // Todo automatic
+
+		let date = new Date();
+		let day = date.getDate();
+		let month = date.getMonth() + 1;
+		let year = date.getFullYear();
+
+		parameters.sinceDate = "2017-01-09"; // Todo automatic
+		parameters.sinceDate = year + "-" + month + "-" + day; // Todo automatic
+		console.log(parameters.sinceDate);
 
 		parallel({
 			uploads: function(callback) {
@@ -30,7 +38,7 @@ function handleQuery(serverRequest, serverResponse) {
 			},
 		    collections: function(callback) {
 				get.get(
-			    	("/v0/collections?langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
+			    	("/v0/collections?lang=fi&langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
 			  		callback
 			  	);
 		    }
@@ -51,16 +59,10 @@ function handleQuery(serverRequest, serverResponse) {
 // --------------------------------------------------------------------
 
 function getUploads(data) {
-//	console.log(data.collections);
-
 	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
-//	console.log(collectionsQueryObj);
-
 	let plaintext = getUploadsPlaintext(data.uploads, collectionsQueryObj);
-	console.log(plaintext);
-
-//	let message = wrapToMessage(plaintext);
-//	sendToTelegram(message);
+	let message = wrapToMessage(plaintext);
+	sendToTelegram(message);
 }
 
 function getVihkolatest(data) {
@@ -68,22 +70,23 @@ function getVihkolatest(data) {
 
 // --------------------------------------------------------------------
 
+
+// Prepares collection names into an object
 function getCollectionsQueryObject(data) {
 	let collectionsQueryObj = {};
 	for (let i = 0; i < data.results.length; i++) {
 		let item = data.results[i];
 		let collectionId = "http://tun.fi/" + item.id; // Add missing domain name
-		collectionsQueryObj[collectionId] = item.collectionName; // Format name here
+		collectionsQueryObj[collectionId] = item.longName;
 	}
 	return collectionsQueryObj;
 }
 
 
 // Formats the object-data into a human-readable plaintext
-// This is the data processing-meat!
 function getUploadsPlaintext(data, collectionsQueryObj) {
 	let plaintext = "";
-	let suffix = " records";
+	let suffix = " havaintoa";
 
 	for (let i = 0; i < data.results.length; i++) {
 		let item = data.results[i];
@@ -99,10 +102,9 @@ function getUploadsPlaintext(data, collectionsQueryObj) {
 	return plaintext;
 }
 
-// Todo: UNFAKE
 // Wraps the text into a message, with intro & footer.
 function wrapToMessage(text) {
-	return "Uploads to FinBIF data warehouse since " + parameters.sinceDate + ": \n" + text + "";
+	return "Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " alkaen: \n" + text + "";
 }
 
 function sendToTelegram(message) {
