@@ -19,7 +19,7 @@ function handleQuery(serverRequest, serverResponse) {
 
 	else if ("/uploads" == serverRequest.url) {
 		parameters.requestType = "getUploads";
-		parameters.sinceDate = "2017-01-10";
+		parameters.sinceDate = "2017-01-11"; // Todo automatic
 
 		parallel({
 			uploads: function(callback) {
@@ -54,9 +54,11 @@ function getUploads(data) {
 //	console.log(data.collections);
 
 	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
-	console.log(collectionsQueryObj);
+//	console.log(collectionsQueryObj);
 
-//	let plaintext = formatAsPlaintext(data.uploads);
+	let plaintext = getUploadsPlaintext(data.uploads, collectionsQueryObj);
+	console.log(plaintext);
+
 //	let message = wrapToMessage(plaintext);
 //	sendToTelegram(message);
 }
@@ -67,27 +69,30 @@ function getVihkolatest(data) {
 // --------------------------------------------------------------------
 
 function getCollectionsQueryObject(data) {
-	let collectionObj = {};
+	let collectionsQueryObj = {};
 	for (let i = 0; i < data.results.length; i++) {
 		let item = data.results[i];
-		collectionObj[item.id] = item.collectionName;
+		let collectionId = "http://tun.fi/" + item.id; // Add missing domain name
+		collectionsQueryObj[collectionId] = item.collectionName; // Format name here
 	}
-	return collectionObj;
+	return collectionsQueryObj;
 }
 
 
 // Formats the object-data into a human-readable plaintext
 // This is the data processing-meat!
-function formatAsPlaintext(data) {
+function getUploadsPlaintext(data, collectionsQueryObj) {
 	let plaintext = "";
 	let suffix = " records";
 
 	for (let i = 0; i < data.results.length; i++) {
-		let item       = data.results[i];
-    	let collection = item.aggregateBy["document.collectionId"];
-    	let count      = item.count;
+		let item = data.results[i];
+    	let collectionId = item.aggregateBy["document.collectionId"];
+    	let collectionName = collectionsQueryObj[collectionId];
+    	let count = item.count;
+
 //    	console.log(i + ". " + collection + ": " + count);
-    	plaintext += (i+1) + ". " + collection + ": " + count + suffix + "\n";
+    	plaintext += (i+1) + ". " + collectionName + ": " + count + suffix + "\n";
     	suffix = "";
     }
 
