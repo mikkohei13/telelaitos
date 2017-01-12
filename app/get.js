@@ -19,8 +19,8 @@ function getDataFromAPI(APIpath, localCallback) {
 	console.log(options.path);
 
 	https.get(options, function handleAPIResponseStream(apiResponse) {
-		if (404 == apiResponse.statusCode) { // Stop processing on 404
-			handleAPIError(404);
+		if (200 != apiResponse.statusCode) { // Stop processing on error
+			handleAPIError(apiResponse.statusCode);
 		}
 		else {
 			let body = '';
@@ -46,13 +46,14 @@ function getDataFromAPI(APIpath, localCallback) {
 
 function handleAPIError(error) {
 	parameters.response.writeHead(504);
-	if (404 == error) {
-		parameters.response.end('api.laji.fi endpoint not found (404)');
-		console.log("api.laji.fi returns 404: " + error);
+	if (Number.isInteger(error)) {
+		let errorMessage = 'api.laji.fi error with status code ' + error;
+		parameters.response.end(errorMessage);
+		console.log(errorMessage);
 	}
 	else {
-		parameters.response.end('api.laji.fi is not responding (504)');
-		console.log("Error reading api.laji.fi (check server internet connection): " + error);
+		parameters.response.end('api.laji.fi is not responding');
+		console.log("api.laji.fi is not responding (check server internet connection), error message: " + error);
 	}
 }
 
