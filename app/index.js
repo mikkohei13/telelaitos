@@ -1,5 +1,5 @@
 
-const port = 3000;
+let port = 3000;
 
 const lajiAPI = require('./lajiapi.js');
 const http = require('http');
