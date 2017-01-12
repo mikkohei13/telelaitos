@@ -11,8 +11,12 @@ by givingh it two arguments, request and reponse objects. This is the standard w
 callback functions.
 */
 
+if (process.env.PORT) {
+  port = process.env.PORT;
+}
+
 const server = http.createServer(requestHandler); 
-server.listen(port, startServer);
+server.listen((port), startServer);
 
 
 // Functions
