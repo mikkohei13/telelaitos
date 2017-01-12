@@ -4,10 +4,10 @@ const url = require('url');
 const parallel = require('async/parallel');
 const Slimbot = require('slimbot');
 const get = require('./get');
-const keys = require('../keys.js');
+//const keys = require('../keys.js');
 
 let parameters = {};
-parameters.productionMode = true; // true -> sends messages to Telegram
+parameters.productionMode = false; // true -> sends messages to Telegram
 
 // --------------------------------------------------------------------
 // Routing, API queries
@@ -108,7 +108,7 @@ function wrapToMessage(text) {
 
 function sendToTelegram(message) {
 //	const Slimbot = require('slimbot');
-	const slimbot = new Slimbot(keys.lajibotTelegramToken);
+	const slimbot = new Slimbot(process.env.TELEGRAM_LAJIBOT_TOKEN);
 
 	if (parameters.productionMode) {
 		slimbot.sendMessage('@lajifi', message).then(reply => {
