@@ -7,6 +7,7 @@ const get = require('./get');
 const keys = require('../keys.js');
 
 let parameters = {};
+parameters.productionMode = true; // true -> sends messages to Telegram
 
 // --------------------------------------------------------------------
 // Routing, API queries
@@ -109,8 +110,7 @@ function sendToTelegram(message) {
 //	const Slimbot = require('slimbot');
 	const slimbot = new Slimbot(keys.lajibotTelegramToken);
 
-	let sendToTelegram = false; // DEBUG
-	if (sendToTelegram) {
+	if (parameters.productionMode) {
 		slimbot.sendMessage('@lajifi', message).then(reply => {
 		  console.log(reply);
 		  parameters.response.end("Done sending to Telegram. (" + message.length + " characters)");
