@@ -1,13 +1,13 @@
 // lajiapi module
 
 const url = require('url');
+const querystring = require('querystring');
 const parallel = require('async/parallel');
 const Slimbot = require('slimbot');
 const get = require('./get');
 //const keys = require('../keys.js');
 
 let parameters = {};
-parameters.productionMode = true; // true -> sends messages to Telegram
 
 // --------------------------------------------------------------------
 // Routing, API queries
@@ -15,14 +15,20 @@ parameters.productionMode = true; // true -> sends messages to Telegram
 // Decides what to do with the query
 function handleQuery(serverRequest, serverResponse) {
 	parameters.response = serverResponse; // Makes this available to the whole module
+	setUrlParameters(serverRequest.url);
 	get.init(parameters); // More elegant way to do this?
 
+	console.log(parameters.urlParts);
+	console.log(parameters.queryParts);
+
+//	debug(parameters.queryParts.telegram);
+
 	// Router - decides what to do based on URL
-	if ("/vihkolatest" == serverRequest.url) {
+	if ("/vihkolatest" == parameters.urlParts.pathname) {
 		parameters.requestType = "getVihkolatest";
 	}
 
-	else if ("/uploads" == serverRequest.url) {
+	else if ("/uploads" == parameters.urlParts.pathname) {
 		parameters.requestType = "getUploads";
 		parameters.sinceDate = getDateYesterday();
 
@@ -49,7 +55,7 @@ function handleQuery(serverRequest, serverResponse) {
 	else {
 		console.log(serverRequest.url + " not found");
 		parameters.response.writeHead(404);
-		parameters.response.end('Page not found (404)');
+		parameters.response.end('Page not found 404');
 	}
 }
 
@@ -110,7 +116,7 @@ function sendToTelegram(message) {
 //	const Slimbot = require('slimbot');
 	const slimbot = new Slimbot(process.env.TELEGRAM_LAJIBOT_TOKEN);
 
-	if (parameters.productionMode) {
+	if (true === parameters.productionMode) {
 		slimbot.sendMessage('@lajifi', message).then(reply => {
 		  console.log(reply);
 		  parameters.response.end("Done sending to Telegram. (" + message.length + " characters)");
@@ -129,6 +135,25 @@ function getDateYesterday() {
 	let month = date.getMonth() + 1;
 	let year = date.getFullYear();
 	return (year + "-" + month + "-" + day);
+}
+
+function setUrlParameters(urlString) {
+	parameters.urlParts = url.parse(urlString);
+	parameters.queryParts = querystring.parse(parameters.urlParts.query);
+	if ("true" == parameters.queryParts.telegram) {
+		parameters.productionMode = true;
+	}
+	else {
+		parameters.productionMode = false;
+	}
+}
+
+function debug(data) {
+	parameters.productionMode = false;
+	console.log("Debug:");
+	console.log(data);
+	parameters.response.end("Debug");
+	debugger;
 }
 
 // --------------------------------------------------------------------
