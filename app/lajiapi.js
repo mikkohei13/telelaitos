@@ -105,7 +105,7 @@ function getUploadsPlaintext(data, collectionsQueryObj) {
 
 // Wraps the text into a message, with intro & footer.
 function wrapToMessage(text) {
-	return "Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " alkaen: \n" + text + "";
+	return "Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " jälkeen: \n" + text + "\nLuvut sisältävät sekä uuden että päivitetyt havainnot.";
 }
 
 // --------------------------------------------------------------------
@@ -113,7 +113,7 @@ function wrapToMessage(text) {
 
 function getDateYesterday() {
 	let date = new Date();
-	let day = date.getDate() - 1;
+	let day = date.getDate() - 2; // -2 because of exclusive filter
 	let month = date.getMonth() + 1;
 	let year = date.getFullYear();
 	return (year + "-" + month + "-" + day);
