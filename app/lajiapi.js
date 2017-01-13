@@ -26,6 +26,27 @@ function handleQuery(serverRequest, serverResponse) {
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == parameters.urlParts.pathname) {
 		parameters.requestType = "getVihkolatest";
+
+		parallel({
+			latest: function(callback) {
+				get.get(
+					("/v0/warehouse/query/list?selected=document.createdDate%2Cdocument.documentId%2Cdocument.editors%2Cdocument.loadDate%2Cgathering.biogeographicalProvince%2Cgathering.conversions.wgs84CenterPoint.lat%2Cgathering.conversions.wgs84CenterPoint.lon%2Cgathering.country%2Cgathering.eventDate.begin%2Cgathering.eventDate.end%2Cgathering.interpretations.biogeographicalProvince%2Cgathering.interpretations.country%2Cgathering.interpretations.finnishMunicipality%2Cgathering.locality%2Cgathering.municipality%2Cgathering.notes%2Cgathering.province%2Cgathering.team%2Cunit.linkings.taxon.qname%2Cunit.linkings.taxon.scientificName%2Cunit.linkings.taxon.vernacularName&orderBy=document.documentId%20DESC&pageSize=100&page=1&collectionId=HR.1747"),
+					callback
+				);
+			}/*,
+			collections: function(callback) {
+				get.get(
+					("/v0/collections?lang=fi&langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
+					callback
+				);
+			}
+*/		},
+		function(err, results) {
+//			console.log(results); // ABBA: 
+			getVihkolatest(results);
+		});		
+
+
 	}
 
 	else if ("/uploads" == parameters.urlParts.pathname) {
@@ -70,6 +91,34 @@ function getUploads(data) {
 }
 
 function getVihkolatest(data) {
+//	console.log(JSON.stringify(data));
+//	console.log(data.latest.results[0]);
+
+	let documentsArray = data.latest.results;
+
+	debug(documentsArray);
+
+	let latestDocumentId = "none";
+	let unitCount = 0;
+
+	for (let i = 0; i < documentsArray.length; i++) {
+		if ("none" == latestDocumentId) {
+			latestDocumentId = documentsArray[i].document.documentId; // const ?
+		}
+
+		if (documentsArray[i].document.documentId == latestDocumentId) {
+			unitCount++;
+		}
+		else {
+			break;
+		}
+	}
+
+	console.log(latestDocumentId + ": " + unitCount + " units");
+
+//	let latestDocument = data.latest.results[0];
+//	let documentId = latestDocument.document.documentId;
+//	console.log(documentId);
 }
 
 // --------------------------------------------------------------------
@@ -132,8 +181,10 @@ function setUrlParameters(urlString) {
 
 function debug(data) {
 	parameters.productionMode = false;
+	console.log("************************************");
 	console.log("Debug:");
 	console.log(data);
+	console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	parameters.response.end("Debug");
 	debugger;
 }
