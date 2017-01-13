@@ -3,8 +3,8 @@
 const url = require('url');
 const querystring = require('querystring');
 const parallel = require('async/parallel');
-const Slimbot = require('slimbot');
 const get = require('./get');
+const telegram = require('./telegram');
 //const keys = require('../keys.js');
 
 let parameters = {};
@@ -16,12 +16,12 @@ let parameters = {};
 function handleQuery(serverRequest, serverResponse) {
 	parameters.response = serverResponse; // Makes this available to the whole module
 	setUrlParameters(serverRequest.url);
+
 	get.init(parameters); // More elegant way to do this?
+	telegram.init(parameters); // More elegant way to do this?
 
-	console.log(parameters.urlParts);
-	console.log(parameters.queryParts);
-
-//	debug(parameters.queryParts.telegram);
+//	console.log(parameters.urlParts);
+//	console.log(parameters.queryParts);
 
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == parameters.urlParts.pathname) {
@@ -66,7 +66,7 @@ function getUploads(data) {
 	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
 	let plaintext = getUploadsPlaintext(data.uploads, collectionsQueryObj);
 	let message = wrapToMessage(plaintext);
-	sendToTelegram(message);
+	telegram.sendToTelegram(message);
 }
 
 function getVihkolatest(data) {
@@ -109,25 +109,7 @@ function wrapToMessage(text) {
 }
 
 // --------------------------------------------------------------------
-// Telegram
-// TODO: ->module
-
-function sendToTelegram(message) {
-//	const Slimbot = require('slimbot');
-	const slimbot = new Slimbot(process.env.TELEGRAM_LAJIBOT_TOKEN);
-
-	if (true === parameters.productionMode) {
-		slimbot.sendMessage('@lajifi', message).then(reply => {
-		  console.log(reply);
-		  parameters.response.end("Done sending to Telegram. (" + message.length + " characters)");
-		});
-	}
-	else
-	{
-		console.log("Debug mode, did not send this to Telegram:\n" + message);
-		parameters.response.end("Done debugging. (" + message.length + " characters)");
-	}
-}
+// Helpers
 
 function getDateYesterday() {
 	let date = new Date();
