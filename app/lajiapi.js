@@ -3,6 +3,8 @@
 const url = require('url');
 const querystring = require('querystring');
 const parallel = require('async/parallel');
+const md5 = require('js-md5');
+
 const get = require('./get');
 const telegram = require('./telegram');
 //const keys = require('../keys.js');
@@ -30,7 +32,7 @@ function handleQuery(serverRequest, serverResponse) {
 		parallel({
 			latest: function(callback) {
 				get.get(
-					("/v0/warehouse/query/list?selected=document.createdDate%2Cdocument.documentId%2Cdocument.editors%2Cdocument.loadDate%2Cgathering.biogeographicalProvince%2Cgathering.conversions.wgs84CenterPoint.lat%2Cgathering.conversions.wgs84CenterPoint.lon%2Cgathering.country%2Cgathering.eventDate.begin%2Cgathering.eventDate.end%2Cgathering.interpretations.biogeographicalProvince%2Cgathering.interpretations.country%2Cgathering.interpretations.finnishMunicipality%2Cgathering.locality%2Cgathering.municipality%2Cgathering.notes%2Cgathering.province%2Cgathering.team%2Cunit.linkings.taxon.qname%2Cunit.linkings.taxon.scientificName%2Cunit.linkings.taxon.vernacularName&orderBy=document.documentId%20DESC&pageSize=100&page=1&collectionId=HR.1747"),
+					("/v0/warehouse/query/list?selected=document.createdDate%2Cdocument.documentId%2Cdocument.editors%2Cdocument.loadDate%2Cgathering.biogeographicalProvince%2Cgathering.conversions.wgs84CenterPoint.lat%2Cgathering.conversions.wgs84CenterPoint.lon%2Cgathering.country%2Cgathering.eventDate.begin%2Cgathering.eventDate.end%2Cgathering.gatheringId%2Cgathering.interpretations.biogeographicalProvince%2Cgathering.interpretations.country%2Cgathering.interpretations.finnishMunicipality%2Cgathering.locality%2Cgathering.municipality%2Cgathering.notes%2Cgathering.province%2Cgathering.team%2Cunit.linkings.taxon.qname%2Cunit.linkings.taxon.scientificName%2Cunit.linkings.taxon.vernacularName%2Cunit.unitId&orderBy=document.documentId%20DESC&pageSize=100&page=1&collectionId=HR.1747"),
 					callback
 				);
 			}/*,
@@ -96,25 +98,52 @@ function getVihkolatest(data) {
 
 	let documentsArray = data.latest.results;
 
-	debug(documentsArray);
+//	debug(documentsArray);
 
 	let latestDocumentId = "none";
-	let unitCount = 0;
+	let documentsObj = {};
+	let totalUnitCount = 0;
 
+	// Goes through units, each of which repeats it's parent gathering and document data.
 	for (let i = 0; i < documentsArray.length; i++) {
 		if ("none" == latestDocumentId) {
 			latestDocumentId = documentsArray[i].document.documentId; // const ?
 		}
 
+		if (typeof documentsObj[latestDocumentId] == 'undefined') {
+			documentsObj[latestDocumentId] = {};
+		}
+		if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == 'undefined') {
+			documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] = {};
+		}
+
 		if (documentsArray[i].document.documentId == latestDocumentId) {
-			unitCount++;
+//			debug(latestDocumentId);
+			if (typeof documentsArray[i].gathering.locality !== 'undefined') {
+				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = documentsArray[i].gathering.locality;
+			}
+			else
+			{
+				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = "(tyhjä sijainti)";
+			}
+			if (typeof documentsArray[i].gathering.team !== 'undefined') {
+				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = documentsArray[i].gathering.team.join(", ");
+			}
+			else
+			{
+				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = "(tyhjä ryhmä)";
+			}
+			documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["unitCount"] = addOne(documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["unitCount"]); // ABBA
+			totalUnitCount++;
 		}
 		else {
-			break;
+			break; // Break when first document ends
 		}
 	}
 
-	console.log(latestDocumentId + ": " + unitCount + " units");
+	console.log(totalUnitCount);
+	debug(documentsObj);
+//	console.log(latestDocumentId + ": " + unitCount + " units");
 
 //	let latestDocument = data.latest.results[0];
 //	let documentId = latestDocument.document.documentId;
@@ -177,6 +206,16 @@ function setUrlParameters(urlString) {
 	else {
 		parameters.productionMode = false;
 	}
+}
+
+function addOne(nro) {
+	if (typeof nro == 'undefined') {
+		nro = 1;
+	}
+	else {
+		nro++;
+	}
+	return nro;
 }
 
 function debug(data) {
