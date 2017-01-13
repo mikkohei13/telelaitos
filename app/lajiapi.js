@@ -110,14 +110,27 @@ function getVihkolatest(data) {
 			latestDocumentId = documentsArray[i].document.documentId; // const ?
 		}
 
-		if (typeof documentsObj[latestDocumentId] == 'undefined') {
-			documentsObj[latestDocumentId] = {};
-		}
-		if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == 'undefined') {
-			documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] = {};
-		}
+		/* TODO:
+		read latest id from file
+			if not found
+				write id to file
+				parse to a message
+				send to telegram
+			if found
+				set nosend
+				break
+				log message instead of sending to telegram
+
+		*/
 
 		if (documentsArray[i].document.documentId == latestDocumentId) {
+			if (typeof documentsObj[latestDocumentId] == 'undefined') {
+				documentsObj[latestDocumentId] = {};
+			}
+			if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == 'undefined') {
+				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] = {};
+			}
+
 //			debug(latestDocumentId);
 			if (typeof documentsArray[i].gathering.locality !== 'undefined') {
 				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = documentsArray[i].gathering.locality;
@@ -141,8 +154,15 @@ function getVihkolatest(data) {
 		}
 	}
 
-	console.log(totalUnitCount);
-	debug(documentsObj);
+//	console.log(totalUnitCount);
+//	debug(documentsObj);
+
+	// TODO: better message handling
+
+	let message = (totalUnitCount + " uutta havista:\n" + JSON.stringify(documentsObj));
+	parameters.response.end(message);
+	telegram.sendToTelegram(message);
+
 //	console.log(latestDocumentId + ": " + unitCount + " units");
 
 //	let latestDocument = data.latest.results[0];
