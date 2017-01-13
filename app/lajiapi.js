@@ -7,7 +7,7 @@ const get = require('./get');
 //const keys = require('../keys.js');
 
 let parameters = {};
-parameters.productionMode = false; // true -> sends messages to Telegram
+parameters.productionMode = true; // true -> sends messages to Telegram
 
 // --------------------------------------------------------------------
 // Routing, API queries
