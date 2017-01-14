@@ -112,13 +112,15 @@ function getVihkolatest(data) {
 	for (let i = 0; i < documentsArray.length; i++) {
 		if ("none" == latestDocumentId) {
 			latestDocumentId = documentsArray[i].document.documentId; // const ?
-			let previousDocumentId = fs.readFileSync(filename);
-			if (previousDocumentId == latestDocumentId) {
-				send = false;
-				break;
-			}
-			else {
-				fs.writeFileSync(filename, latestDocumentId);
+			if (1 != parameters.queryParts.resend) {
+				let previousDocumentId = fs.readFileSync(filename);
+				if (previousDocumentId == latestDocumentId) {
+					send = false;
+					break;
+				}
+				else {
+					fs.writeFileSync(filename, latestDocumentId);
+				}
 			}
 		}
 
@@ -238,12 +240,13 @@ function getDateYesterday() {
 function setUrlParameters(urlString) {
 	parameters.urlParts = url.parse(urlString);
 	parameters.queryParts = querystring.parse(parameters.urlParts.query);
-	if ("true" == parameters.queryParts.telegram) {
+	if (1 == parameters.queryParts.telegram) {
 		parameters.productionMode = true;
 	}
 	else {
 		parameters.productionMode = false;
 	}
+	console.log(parameters.queryParts);
 }
 
 function addOne(nro) {
