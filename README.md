@@ -23,3 +23,18 @@ Deploy to Heroku:
 Tail Heroku logs:
 
 	heroku logs --tail
+
+Call
+----
+
+Debug, resend latest document:
+
+	https://MY-APP-NAME.herokuapp.com/vihkolatest?resend=1
+
+Production, send only new document:
+
+	https://MY-APP-NAME.herokuapp.com/vihkolatest?telegram=1
+
+Crontab:
+
+	*/5 * * * * wget -qO- myAppUrl &> /dev/null
