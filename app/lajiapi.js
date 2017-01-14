@@ -3,7 +3,9 @@
 const url = require('url');
 const querystring = require('querystring');
 const parallel = require('async/parallel');
-const md5 = require('js-md5');
+const md5 = require('js-md5'); // REMOVE
+const fs = require('fs');
+
 
 const get = require('./get');
 const telegram = require('./telegram');
@@ -103,11 +105,21 @@ function getVihkolatest(data) {
 	let latestDocumentId = "none";
 	let documentsObj = {};
 	let totalUnitCount = 0;
+	let send = true;
+	let filename = "local/vihkolatest.txt";
 
 	// Goes through units, each of which repeats it's parent gathering and document data.
 	for (let i = 0; i < documentsArray.length; i++) {
 		if ("none" == latestDocumentId) {
 			latestDocumentId = documentsArray[i].document.documentId; // const ?
+			let previousDocumentId = fs.readFileSync(filename);
+			if (previousDocumentId == latestDocumentId) {
+				send = false;
+				break;
+			}
+			else {
+				fs.writeFileSync(filename, latestDocumentId);
+			}
 		}
 
 		/* TODO:
@@ -159,9 +171,15 @@ function getVihkolatest(data) {
 
 	// TODO: better message handling
 
-	let message = (totalUnitCount + " uutta havista:\n" + JSON.stringify(documentsObj));
-	parameters.response.end(message);
-	telegram.sendToTelegram(message);
+	if (send) {
+		let message = (totalUnitCount + " uutta havista:\n" + JSON.stringify(documentsObj));
+		parameters.response.end(message);
+		telegram.sendToTelegram(message);
+	}
+	else
+	{
+		parameters.response.end("No new documents, latest was " + latestDocumentId);
+	}
 
 //	console.log(latestDocumentId + ": " + unitCount + " units");
 
