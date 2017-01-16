@@ -12,7 +12,7 @@ function sendToTelegram(message) {
 //	const Slimbot = require('slimbot');
 	const slimbot = new Slimbot(process.env.TELEGRAM_LAJIBOT_TOKEN);
 
-	if (true === parameters.productionMode) {
+	if (true === parameters.sendToTelegram) {
 		slimbot.sendMessage('@lajifi', message).then(reply => {
 			response(message, reply);
 		});
