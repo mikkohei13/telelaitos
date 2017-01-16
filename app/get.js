@@ -10,13 +10,13 @@ function init(params) {
 	parameters = params; // move params to module's global scope
 }
 
-function getDataFromAPI(APIpath, localCallback) {
+function get(host, path, localCallback) {
 	let options = {
-		host: 'api.laji.fi',
-		path: (APIpath + "&access_token=" +  process.env.LAJI_TOKEN)
+		host: host,
+		path: path
 	}
 
-	console.log(options.path);
+//	console.log(options.path);
 
 	https.get(options, function handleAPIResponseStream(apiResponse) {
 		if (200 != apiResponse.statusCode) { // Stop processing on error
@@ -58,6 +58,6 @@ function handleAPIError(error) {
 }
 
 module.exports = {
-	get: getDataFromAPI,
+	https: get,
 	init: init
 }

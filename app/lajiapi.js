@@ -33,23 +33,16 @@ function handleQuery(serverRequest, serverResponse) {
 
 		parallel({
 			latest: function(callback) {
-				get.get(
-					("/v0/warehouse/query/list?selected=document.createdDate%2Cdocument.documentId%2Cdocument.editors%2Cdocument.loadDate%2Cgathering.biogeographicalProvince%2Cgathering.conversions.wgs84CenterPoint.lat%2Cgathering.conversions.wgs84CenterPoint.lon%2Cgathering.country%2Cgathering.eventDate.begin%2Cgathering.eventDate.end%2Cgathering.gatheringId%2Cgathering.interpretations.biogeographicalProvince%2Cgathering.interpretations.country%2Cgathering.interpretations.finnishMunicipality%2Cgathering.locality%2Cgathering.municipality%2Cgathering.notes%2Cgathering.province%2Cgathering.team%2Cunit.linkings.taxon.qname%2Cunit.linkings.taxon.scientificName%2Cunit.linkings.taxon.vernacularName%2Cunit.unitId&orderBy=document.documentId%20DESC&pageSize=100&page=1&collectionId=HR.1747"),
-					callback
-				);
-			}/*,
-			collections: function(callback) {
-				get.get(
-					("/v0/collections?lang=fi&langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
+				get.https(
+					"api.laji.fi",
+					("/v0/warehouse/query/list?selected=document.createdDate%2Cdocument.documentId%2Cdocument.editors%2Cdocument.loadDate%2Cgathering.biogeographicalProvince%2Cgathering.conversions.wgs84CenterPoint.lat%2Cgathering.conversions.wgs84CenterPoint.lon%2Cgathering.country%2Cgathering.eventDate.begin%2Cgathering.eventDate.end%2Cgathering.gatheringId%2Cgathering.interpretations.biogeographicalProvince%2Cgathering.interpretations.country%2Cgathering.interpretations.finnishMunicipality%2Cgathering.locality%2Cgathering.municipality%2Cgathering.notes%2Cgathering.province%2Cgathering.team%2Cunit.linkings.taxon.qname%2Cunit.linkings.taxon.scientificName%2Cunit.linkings.taxon.vernacularName%2Cunit.unitId&orderBy=document.documentId%20DESC&pageSize=100&page=1&collectionId=HR.1747" + "&access_token=" +  process.env.LAJI_TOKEN),
 					callback
 				);
 			}
-*/		},
+		},
 		function(err, results) {
-//			console.log(results); // ABBA: 
 			getVihkolatest(results);
-		});		
-
+		});
 
 	}
 
@@ -59,14 +52,16 @@ function handleQuery(serverRequest, serverResponse) {
 
 		parallel({
 			uploads: function(callback) {
-				get.get(
-					("/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=" + parameters.sinceDate),
+				get.https(
+					"api.laji.fi",
+					("/v0/warehouse/query/aggregate?aggregateBy=document.collectionId&geoJSON=false&pageSize=100&page=1&loadedLaterThan=" + parameters.sinceDate + "&access_token=" +  process.env.LAJI_TOKEN),
 					callback
 				);
 			},
 			collections: function(callback) {
-				get.get(
-					("/v0/collections?lang=fi&langFallback=true&pageSize=1000"), // Currently ~360 (2017-01-11)
+				get.https(
+					"api.laji.fi",
+					("/v0/collections?lang=fi&langFallback=true&pageSize=1000" + "&access_token=" +  process.env.LAJI_TOKEN), // Currently ~360 (2017-01-11)
 					callback
 				);
 			}
@@ -90,7 +85,14 @@ function handleQuery(serverRequest, serverResponse) {
 function getUploads(data) {
 	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
 	let plaintext = getUploadsPlaintext(data.uploads, collectionsQueryObj);
-	let message = wrapToMessage(plaintext);
+
+	let messageParts = {
+		prefix: ("Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " jälkeen:\n"),
+		text : plaintext,
+		suffix: "\nLuvut sisältävät sekä uudet että päivitetyt havainnot."
+	};
+	let message = wrapToMessage(messageParts);
+
 	telegram.sendToTelegram(message);
 }
 
@@ -174,7 +176,12 @@ function getVihkolatest(data) {
 	// TODO: better message handling
 
 	if (send) {
-		let message = (totalUnitCount + " uutta havista:\n" + JSON.stringify(documentsObj));
+		let messageParts = {
+			prefix: (totalUnitCount + " uutta havista:\n"),
+			text : JSON.stringify(documentsObj),
+			suffix: ""
+		};
+		let message = wrapToMessage(messageParts);
 		parameters.response.end(message);
 		telegram.sendToTelegram(message);
 	}
@@ -221,13 +228,14 @@ function getUploadsPlaintext(data, collectionsQueryObj) {
 	return plaintext;
 }
 
-// Wraps the text into a message, with intro & footer.
-function wrapToMessage(text) {
-	return "Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " jälkeen: \n" + text + "\nLuvut sisältävät sekä uuden että päivitetyt havainnot.";
-}
-
 // --------------------------------------------------------------------
 // Helpers
+
+// Wraps the text into a message, with intro & footer.
+function wrapToMessage(data) {
+	let message = data.prefix + " " + data.text + " " + data.suffix;
+	return message;
+}
 
 function getDateYesterday() {
 	let date = new Date();
