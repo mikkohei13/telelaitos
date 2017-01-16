@@ -9,6 +9,7 @@ Set keys to .env:
 
 	LAJI_TOKEN=your-api.laji.fi-token
 	TELEGRAM_LAJIBOT_TOKEN=your-telegram-bot-token
+	CRONITOR_PING_ID=ping-id
 
 Set keys to Heroku dashboard app settings: https://dashboard.heroku.com/apps/
 
@@ -29,11 +30,11 @@ Call
 
 Debug, resend latest document:
 
-	https://MY-APP-NAME.herokuapp.com/vihkolatest?resend=1
+	https://MY-APP-NAME.herokuapp.com/vihkolatest?telegram=0&resend=1&cronitor=0
 
 Production, send only new document:
 
-	https://MY-APP-NAME.herokuapp.com/vihkolatest?telegram=1
+	https://MY-APP-NAME.herokuapp.com/vihkolatest?telegram=1&resend=0&cronitor=1
 
 Crontab:
 

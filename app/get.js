@@ -34,7 +34,7 @@ function get(host, path, localCallback) {
 				try {
 					data = JSON.parse(body);
 				} catch(e) {
-					console.log('Malformed request: ' + body);
+					console.log('Response could not be parsed as JSON: ' + body);
 				}
 	//	   		console.log("body: " + body); // debug
 		   		localCallback(null, data); // First argument is error

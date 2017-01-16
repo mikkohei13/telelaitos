@@ -29,6 +29,8 @@ function handleQuery(serverRequest, serverResponse) {
 
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == parameters.urlParts.pathname) {
+
+		pingCronitor("run");
 		parameters.requestType = "getVihkolatest";
 
 		parallel({
@@ -47,6 +49,8 @@ function handleQuery(serverRequest, serverResponse) {
 	}
 
 	else if ("/uploads" == parameters.urlParts.pathname) {
+
+//		pingCronitor("run"); // Hasn't yet implemented the complete command
 		parameters.requestType = "getUploads";
 		parameters.sinceDate = getDateYesterday();
 
@@ -126,19 +130,6 @@ function getVihkolatest(data) {
 			}
 		}
 
-		/* TODO:
-		read latest id from file
-			if not found
-				write id to file
-				parse to a message
-				send to telegram
-			if found
-				set nosend
-				break
-				log message instead of sending to telegram
-
-		*/
-
 		if (documentsArray[i].document.documentId == latestDocumentId) {
 			if (typeof documentsObj[latestDocumentId] == 'undefined') {
 				documentsObj[latestDocumentId] = {};
@@ -190,11 +181,7 @@ function getVihkolatest(data) {
 		parameters.response.end("No new documents, latest was " + latestDocumentId);
 	}
 
-//	console.log(latestDocumentId + ": " + unitCount + " units");
-
-//	let latestDocument = data.latest.results[0];
-//	let documentId = latestDocument.document.documentId;
-//	console.log(documentId);
+	pingCronitor("complete");
 }
 
 // --------------------------------------------------------------------
@@ -249,10 +236,10 @@ function setUrlParameters(urlString) {
 	parameters.urlParts = url.parse(urlString);
 	parameters.queryParts = querystring.parse(parameters.urlParts.query);
 	if (1 == parameters.queryParts.telegram) {
-		parameters.productionMode = true;
+		parameters.sendToTelegram = true;
 	}
 	else {
-		parameters.productionMode = false;
+		parameters.sendToTelegram = false;
 	}
 	console.log(parameters.queryParts);
 }
@@ -268,13 +255,28 @@ function addOne(nro) {
 }
 
 function debug(data) {
-	parameters.productionMode = false;
+	parameters.sendToTelegram = false;
 	console.log("************************************");
 	console.log("Debug:");
 	console.log(data);
 	console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	parameters.response.end("Debug");
 	debugger;
+}
+
+function pingCronitor(endpoint) {
+	if (1 == parameters.queryParts.cronitor) {
+		get.https(
+			"cronitor.link",
+			("/" + process.env.CRONITOR_PING_ID + "/" + endpoint),
+			function () {
+				console.log("Pinged Cronitor " + endpoint);
+			}
+		);
+	}
+	else {
+		console.log("Cronitor ping is off.");
+	}
 }
 
 // --------------------------------------------------------------------
