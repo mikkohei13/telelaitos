@@ -39,3 +39,11 @@ Production, send only new document:
 Crontab:
 
 	*/5 * * * * wget -qO- myAppUrl &> /dev/null
+
+TODO
+====
+
+- Modularize Cronitor
+- Functionalize vihkolatest handling
+- Prettyprint latest observations
+
