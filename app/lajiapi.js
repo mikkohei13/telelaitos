@@ -7,6 +7,7 @@ const fs = require("fs");
 
 const get = require("./get");
 const telegram = require("./telegram");
+const cronitor = require("./cronitor");
 //const keys = require("../keys.js");
 
 let parameters = {};
@@ -28,7 +29,7 @@ function handleQuery(serverRequest, serverResponse) {
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == parameters.urlParts.pathname) {
 
-		pingCronitor("run");
+		cronitor.ping("run", parameters.queryParts.cronitor);
 		parameters.requestType = "getVihkolatest";
 
 		parallel({
@@ -48,7 +49,7 @@ function handleQuery(serverRequest, serverResponse) {
 
 	else if ("/uploads" == parameters.urlParts.pathname) {
 
-//		pingCronitor("run"); // Hasn't yet implemented the complete command
+//		cronitor.ping("run", parameters.queryParts.cronitor); // Hasn't yet implemented the complete command
 		parameters.requestType = "getUploads";
 		parameters.sinceDate = getDateYesterday();
 
@@ -178,7 +179,7 @@ function getVihkolatest(data) {
 		parameters.response.end("No new documents, latest was " + latestDocumentId);
 	}
 
-	pingCronitor("complete");
+	cronitor.ping("complete", parameters.queryParts.cronitor);
 }
 
 // --------------------------------------------------------------------
@@ -259,21 +260,6 @@ function debug(data) {
 	console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	parameters.response.end("Debug");
 	debugger;
-}
-
-function pingCronitor(endpoint) {
-	if (1 == parameters.queryParts.cronitor) {
-		get.https(
-			"cronitor.link",
-			("/" + process.env.CRONITOR_PING_ID + "/" + endpoint),
-			function () {
-				console.log("Pinged Cronitor " + endpoint);
-			}
-		);
-	}
-	else {
-		console.log("Cronitor ping is off.");
-	}
 }
 
 // --------------------------------------------------------------------
