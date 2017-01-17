@@ -71,7 +71,6 @@ function handleQuery(serverRequest, serverResponse) {
 			}
 		},
 		function(err, results) {
-//			console.log(results); // ABBA: 
 			getUploads(results);
 		});		
 	}
@@ -79,7 +78,7 @@ function handleQuery(serverRequest, serverResponse) {
 	else {
 		console.log(serverRequest.url + " not found");
 		parameters.response.writeHead(404);
-		parameters.response.end('Page not found 404');
+		parameters.response.end("Page not found 404");
 	}
 }
 
@@ -131,22 +130,22 @@ function getVihkolatest(data) {
 		}
 
 		if (documentsArray[i].document.documentId == latestDocumentId) {
-			if (typeof documentsObj[latestDocumentId] == 'undefined') {
+			if (typeof documentsObj[latestDocumentId] == "undefined") {
 				documentsObj[latestDocumentId] = {};
 			}
-			if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == 'undefined') {
+			if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == "undefined") {
 				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] = {};
 			}
 
 //			debug(latestDocumentId);
-			if (typeof documentsArray[i].gathering.locality !== 'undefined') {
+			if (typeof documentsArray[i].gathering.locality !== "undefined") {
 				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = documentsArray[i].gathering.locality;
 			}
 			else
 			{
 				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = "(tyhjä sijainti)";
 			}
-			if (typeof documentsArray[i].gathering.team !== 'undefined') {
+			if (typeof documentsArray[i].gathering.team !== "undefined") {
 				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = documentsArray[i].gathering.team.join(", ");
 			}
 			else
