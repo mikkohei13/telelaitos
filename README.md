@@ -38,12 +38,12 @@ Production, send only new document:
 
 Crontab:
 
-	*/5 * * * * wget -qO- myAppUrl &> /dev/null
+	*/5 * * * * wget -qO- 'myAppUrl' &> /dev/null    # Notice quotes around the url!
 
 TODO
 ====
 
-- Modularize Cronitor
+- Modularize Cronitor, Don't stop on error-+
 - Functionalize vihkolatest handling
 - Prettyprint latest observations
 

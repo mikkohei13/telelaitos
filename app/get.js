@@ -47,13 +47,13 @@ function get(host, path, localCallback) {
 function handleAPIError(error) {
 	parameters.response.writeHead(504);
 	if (Number.isInteger(error)) {
-		let errorMessage = 'api.laji.fi error with status code ' + error;
+		let errorMessage = 'External API error with status code ' + error;
 		parameters.response.end(errorMessage);
 		console.log(errorMessage);
 	}
 	else {
-		parameters.response.end('api.laji.fi is not responding');
-		console.log("api.laji.fi is not responding (check server internet connection), error message: " + error);
+		parameters.response.end('External API is not responding');
+		console.log("External API is not responding (check server internet connection), error message: " + error);
 	}
 }
 
