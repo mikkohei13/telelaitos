@@ -3,6 +3,9 @@ keys.js
 .env
 local/*
 
+# Webstorm
+.idea/*
+
 # =========================
 
 # Node.js
