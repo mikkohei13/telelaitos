@@ -8,7 +8,6 @@ const fs = require("fs");
 const get = require("./get");
 const telegram = require("./telegram");
 const cronitor = require("./cronitor");
-//const keys = require("../keys.js");
 
 let parameters = {};
 
@@ -22,9 +21,6 @@ function handleQuery(serverRequest, serverResponse) {
 
 	get.init(parameters); // More elegant way to do this?
 	telegram.init(parameters); // More elegant way to do this?
-
-//	console.log(parameters.urlParts);
-//	console.log(parameters.queryParts);
 
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == parameters.urlParts.pathname) {
@@ -44,12 +40,11 @@ function handleQuery(serverRequest, serverResponse) {
 		function(err, results) {
 			getVihkolatest(results);
 		});
-
 	}
 
 	else if ("/uploads" == parameters.urlParts.pathname) {
 
-//		cronitor.ping("run", parameters.queryParts.cronitor); // Hasn't yet implemented the complete command
+//		cronitor.ping("run", parameters.queryParts.cronitor); // Uncomment when implementing the 'complete' command also
 		parameters.requestType = "getUploads";
 		parameters.sinceDate = getDateYesterday();
 
@@ -82,29 +77,10 @@ function handleQuery(serverRequest, serverResponse) {
 }
 
 // --------------------------------------------------------------------
-// Process data
-
-function getUploads(data) {
-	let collectionsQueryObj = getCollectionsQueryObject(data.collections);
-	let plaintext = getUploadsPlaintext(data.uploads, collectionsQueryObj);
-
-	let messageParts = {
-		prefix: ("Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " jälkeen:\n"),
-		text : plaintext,
-		suffix: "\nLuvut sisältävät sekä uudet että päivitetyt havainnot."
-	};
-	let message = wrapToMessage(messageParts);
-
-	telegram.sendToTelegram(message);
-}
+// Latest from Vihko
 
 function getVihkolatest(data) {
-//	console.log(JSON.stringify(data));
-//	console.log(data.latest.results[0]);
-
 	let documentsArray = data.latest.results;
-
-//	debug(documentsArray);
 
 	let latestDocumentId = "none";
 	let documentsObj = {};
@@ -159,11 +135,6 @@ function getVihkolatest(data) {
 		}
 	}
 
-//	console.log(totalUnitCount);
-//	debug(documentsObj);
-
-	// TODO: better message handling
-
 	if (send) {
 		let messageParts = {
 			prefix: (totalUnitCount + " uutta havista:\n"),
@@ -183,7 +154,21 @@ function getVihkolatest(data) {
 }
 
 // --------------------------------------------------------------------
-// Format getUploads
+// Uploads
+
+function getUploads(data) {
+    let collectionsQueryObj = getCollectionsQueryObject(data.collections);
+    let plaintext = getUploadsPlaintext(data.uploads, collectionsQueryObj);
+
+    let messageParts = {
+        prefix: ("Päivitykset Lajitietokeskuksen tietovarastoon " + parameters.sinceDate + " jälkeen:\n"),
+        text : plaintext,
+        suffix: "\nLuvut sisältävät sekä uudet että päivitetyt havainnot."
+    };
+    let message = wrapToMessage(messageParts);
+
+    telegram.sendToTelegram(message);
+}
 
 // Prepares collection names into an object
 function getCollectionsQueryObject(data) {
@@ -208,18 +193,17 @@ function getUploadsPlaintext(data, collectionsQueryObj) {
 		let count = item.count;
 
 		plaintext += (i+1) + ". " + collectionName + ": " + count + suffix + "\n";
-		suffix = "";
+		suffix = ""; // Clear suffix for all lines except the first
 	}
 	return plaintext;
 }
 
 // --------------------------------------------------------------------
-// Helpers
+// Common helpers
 
 // Wraps the text into a message, with intro & footer.
 function wrapToMessage(data) {
-	let message = data.prefix + " " + data.text + " " + data.suffix;
-	return message;
+	return (data.prefix + " " + data.text + " " + data.suffix);
 }
 
 function getDateYesterday() {
@@ -233,13 +217,7 @@ function getDateYesterday() {
 function setUrlParameters(urlString) {
 	parameters.urlParts = url.parse(urlString);
 	parameters.queryParts = querystring.parse(parameters.urlParts.query);
-	if (1 == parameters.queryParts.telegram) {
-		parameters.sendToTelegram = true;
-	}
-	else {
-		parameters.sendToTelegram = false;
-	}
-	console.log(parameters.queryParts);
+	parameters.sendToTelegram = (1 == parameters.queryParts.telegram);
 }
 
 function addOne(nro) {

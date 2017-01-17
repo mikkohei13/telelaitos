@@ -1,8 +1,6 @@
 // https get module
-// Todo: api -> url
 
-const https = require('https');
-//const keys = require('../keys.js');
+const https = require("https");
 
 let parameters = {};
 
@@ -16,44 +14,38 @@ function get(host, path, localCallback) {
 		path: path
 	}
 
-//	console.log(options.path);
+	https.get(options, function handleResponseStream(apiResponse) {
+		let body = "";
 
-	https.get(options, function handleAPIResponseStream(apiResponse) {
-		if (200 != apiResponse.statusCode) { // Stop processing on error
-			handleAPIError(apiResponse.statusCode);
-		}
-		else {
-			let body = '';
+		apiResponse.on("data", function(chunk) {
+			body += chunk;
+		});
 
-		    apiResponse.on('data', function(chunk) {
-		        body += chunk;
-		    });
+		apiResponse.on("end", function() {
+			let data;
+			try {
+				data = JSON.parse(body);
+			} catch(e) {
+				console.log("Response could not be parsed as JSON: " + body);
+			}
+			localCallback(null, data); // First argument is error
+		});
 
-		    apiResponse.on('end', function() {
-		   		let data;
-				try {
-					data = JSON.parse(body);
-				} catch(e) {
-					console.log('Response could not be parsed as JSON: ' + body);
-				}
-	//	   		console.log("body: " + body); // debug
-		   		localCallback(null, data); // First argument is error
-		    });
-		}
+        apiResponse.on("error", handleError);
 	})
-	.on('error', handleAPIError);
+	.on("error", handleError);
 }
 
-function handleAPIError(error) {
+function handleError(error) {
 	parameters.response.writeHead(504);
 	if (Number.isInteger(error)) {
-		let errorMessage = 'External API error with status code ' + error;
+		let errorMessage = "Third-party server error with status code " + error;
 		parameters.response.end(errorMessage);
 		console.log(errorMessage);
 	}
 	else {
-		parameters.response.end('External API is not responding');
-		console.log("External API is not responding (check server internet connection), error message: " + error);
+		parameters.response.end("Third-party server is not responding");
+		console.log("Third-party server is not responding (check server internet connection), error message: " + error);
 	}
 }
 
