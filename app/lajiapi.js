@@ -1,15 +1,15 @@
 // lajiapi module
 
-const url = require('url');
-const querystring = require('querystring');
-const parallel = require('async/parallel');
-const md5 = require('js-md5'); // REMOVE
-const fs = require('fs');
+const url = require("url");
+const querystring = require("querystring");
+const parallel = require("async/parallel");
+const md5 = require("js-md5"); // REMOVE
+const fs = require("fs");
 
 
-const get = require('./get');
-const telegram = require('./telegram');
-//const keys = require('../keys.js');
+const get = require("./get");
+const telegram = require("./telegram");
+//const keys = require("../keys.js");
 
 let parameters = {};
 
@@ -244,7 +244,7 @@ function setUrlParameters(urlString) {
 }
 
 function addOne(nro) {
-	if (typeof nro == 'undefined') {
+	if (typeof nro == "undefined") {
 		nro = 1;
 	}
 	else {
