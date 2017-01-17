@@ -9,7 +9,6 @@ function init(params) {
 }
 
 function sendToTelegram(message) {
-//	const Slimbot = require('slimbot');
 	const slimbot = new Slimbot(process.env.TELEGRAM_LAJIBOT_TOKEN);
 
 	if (true === parameters.sendToTelegram) {

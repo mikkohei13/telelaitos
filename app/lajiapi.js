@@ -24,9 +24,7 @@ function handleQuery(serverRequest, serverResponse) {
 
 	// Router - decides what to do based on URL
 	if ("/vihkolatest" == parameters.urlParts.pathname) {
-
 		cronitor.ping("run", parameters.queryParts.cronitor);
-		parameters.requestType = "getVihkolatest";
 
 		parallel({
 			latest: function(callback) {
@@ -43,9 +41,7 @@ function handleQuery(serverRequest, serverResponse) {
 	}
 
 	else if ("/uploads" == parameters.urlParts.pathname) {
-
 //		cronitor.ping("run", parameters.queryParts.cronitor); // Uncomment when implementing the 'complete' command also
-		parameters.requestType = "getUploads";
 		parameters.sinceDate = getDateYesterday();
 
 		parallel({
@@ -82,7 +78,7 @@ function handleQuery(serverRequest, serverResponse) {
 function getVihkolatest(data) {
 	let documentsArray = data.latest.results;
 
-	let latestDocumentId = "none";
+	let latestDocumentId = null;
 	let documentsObj = {};
 	let totalUnitCount = 0;
 	let send = true;
@@ -90,7 +86,7 @@ function getVihkolatest(data) {
 
 	// Goes through units, each of which repeats it's parent gathering and document data.
 	for (let i = 0; i < documentsArray.length; i++) {
-		if ("none" == latestDocumentId) {
+		if (null == latestDocumentId) {
 			latestDocumentId = documentsArray[i].document.documentId; // const ?
 			if (1 != parameters.queryParts.resend) {
 				let previousDocumentId = fs.readFileSync(filename);
