@@ -82,7 +82,7 @@ function getVihkolatest(data) {
 	let documentsObj = {};
 	let totalUnitCount = 0;
 	let send = true;
-	let filename = "local/vihkolatest.txt";
+	let filename = "local/" + process.env.LATESTID_FILENAME;
 
 	// Goes through units, each of which repeats it's parent gathering and document data.
 	for (let i = 0; i < documentsArray.length; i++) {

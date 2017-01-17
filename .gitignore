@@ -1,7 +1,7 @@
 
 keys.js
 .env
-local/*
+local/latestid.dev.txt
 
 # Webstorm
 .idea/*
