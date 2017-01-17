@@ -3,9 +3,7 @@
 const url = require("url");
 const querystring = require("querystring");
 const parallel = require("async/parallel");
-const md5 = require("js-md5"); // REMOVE
 const fs = require("fs");
-
 
 const get = require("./get");
 const telegram = require("./telegram");
