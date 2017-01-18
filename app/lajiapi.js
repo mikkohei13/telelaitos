@@ -78,63 +78,13 @@ function handleQuery(serverRequest, serverResponse) {
 function getVihkolatest(data) {
 	let documentsArray = data.latest.results;
 
-	let latestDocumentId = null;
-	let documentsObj = {};
-	let totalUnitCount = 0;
-	let send = true;
-	let filename = "local/" + process.env.LATESTID_FILENAME;
+    let newUnitsData = getNewUnitsData(documentsArray);
+    console.log(newUnitsData);
 
-	// Goes through units, each of which repeats it's parent gathering and document data.
-	for (let i = 0; i < documentsArray.length; i++) {
-		if (null == latestDocumentId) {
-			latestDocumentId = documentsArray[i].document.documentId; // const ?
-			if (1 != parameters.queryParts.resend) {
-				let previousDocumentId = fs.readFileSync(filename);
-				if (previousDocumentId == latestDocumentId) {
-					send = false;
-					break;
-				}
-				else {
-					fs.writeFileSync(filename, latestDocumentId);
-				}
-			}
-		}
-
-		if (documentsArray[i].document.documentId == latestDocumentId) {
-			if (typeof documentsObj[latestDocumentId] == "undefined") {
-				documentsObj[latestDocumentId] = {};
-			}
-			if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == "undefined") {
-				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] = {};
-			}
-
-//			debug(latestDocumentId);
-			if (typeof documentsArray[i].gathering.locality !== "undefined") {
-				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = documentsArray[i].gathering.locality;
-			}
-			else
-			{
-				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = "(tyhjä sijainti)";
-			}
-			if (typeof documentsArray[i].gathering.team !== "undefined") {
-				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = documentsArray[i].gathering.team.join(", ");
-			}
-			else
-			{
-				documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = "(tyhjä ryhmä)";
-			}
-			documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["unitCount"] = addOne(documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["unitCount"]); // ABBA
-			totalUnitCount++;
-		}
-		else {
-			break; // Break when first document ends
-		}
-	}
-
-	if (send) {
+	if (newUnitsData.newUnits) {
 		let messageParts = {
-			prefix: (totalUnitCount + " uutta havista:\n"),
-			text : JSON.stringify(documentsObj),
+			prefix: (newUnitsData.totalUnitCount + " uutta havista:\n"),
+			text : JSON.stringify(newUnitsData.documentsObj),
 			suffix: ""
 		};
 		let message = wrapToMessage(messageParts);
@@ -143,10 +93,79 @@ function getVihkolatest(data) {
 	}
 	else
 	{
-		parameters.response.end("No new documents, latest was " + latestDocumentId);
+		parameters.response.end("No new documents, latest was " + newUnitsData.latestDocumentId);
 	}
 
 	cronitor.ping("complete", parameters.queryParts.cronitor);
+}
+
+function getNewUnitsData(documentsArray) {
+
+    let latestDocumentId = null;
+    let previousDocumentId = "not checked";
+    let newUnits = true;
+    let documentsObj = {};
+    let totalUnitCount = 0;
+    const filename = "local/" + process.env.LATESTID_FILENAME;
+
+    // Goes through units, each of which repeats it's parent gathering and document data.
+    for (let i = 0; i < documentsArray.length; i++) {
+
+        // Run on first unit, to determine if it's from a new document or not
+        if (null == latestDocumentId) {
+            latestDocumentId = documentsArray[i].document.documentId;
+            if (1 != parameters.queryParts.resend) {
+                let options = { "encoding" : "utf-8" };
+                previousDocumentId = fs.readFileSync(filename, options);
+                if (previousDocumentId == latestDocumentId) {
+                    newUnits = false;
+                    break;
+                }
+                else {
+                    newUnits = true;
+                    fs.writeFileSync(filename, latestDocumentId, options);
+                }
+            }
+        }
+
+        if (documentsArray[i].document.documentId == latestDocumentId) {
+            if (typeof documentsObj[latestDocumentId] == "undefined") {
+                documentsObj[latestDocumentId] = {};
+            }
+            if (typeof documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] == "undefined") {
+                documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId] = {};
+            }
+
+//			debug(latestDocumentId);
+            if (typeof documentsArray[i].gathering.locality !== "undefined") {
+                documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = documentsArray[i].gathering.locality;
+            }
+            else
+            {
+                documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["locality"] = "(tyhjä sijainti)";
+            }
+            if (typeof documentsArray[i].gathering.team !== "undefined") {
+                documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = documentsArray[i].gathering.team.join(", ");
+            }
+            else
+            {
+                documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["team"] = "(tyhjä ryhmä)";
+            }
+            documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["unitCount"] = addOne(documentsObj[latestDocumentId][documentsArray[i].gathering.gatheringId]["unitCount"]); // ABBA
+            totalUnitCount++;
+        }
+        else {
+            break; // Break when first document ends
+        }
+    } // closes for
+
+    return {
+        "previousDocumentId" : previousDocumentId,
+        "latestDocumentId" : latestDocumentId,
+        "newUnits" : newUnits,
+        "totalUnitCount" : totalUnitCount,
+        "documentsObj" : documentsObj
+    };
 }
 
 // --------------------------------------------------------------------
