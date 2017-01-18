@@ -79,12 +79,13 @@ function getVihkolatest(data) {
 	let documentsArray = data.latest.results;
 
     let newUnitsData = getNewUnitsData(documentsArray);
-    console.log(newUnitsData);
+//    console.log(newUnitsData);
 
 	if (newUnitsData.newUnits) {
 		let messageParts = {
-			prefix: (newUnitsData.totalUnitCount + " uutta havista:\n"),
-			text : JSON.stringify(newUnitsData.documentsObj),
+			prefix: (newUnitsData.totalUnitCount + " uutta havaintoa"),
+//			text : JSON.stringify(newUnitsData.documentsObj), // debug
+			text : getDocumentPlaintext(newUnitsData.documentsObj),
 			suffix: ""
 		};
 		let message = wrapToMessage(messageParts);
@@ -190,6 +191,20 @@ function unitsToDocument(documentsArray, latestDocumentId) {
     };
 }
 
+function getDocumentPlaintext(document) {
+    let documentId = Object.keys(document);
+    let gatherings = document[documentId];
+    let plaintext = "erässä " + documentId + "\n";
+
+    for (key in gatherings) {
+        let gathering = gatherings[key];
+        plaintext += gathering.locality.toUpperCase() + "\n";
+        plaintext += " " + gathering.team + "\n";
+        plaintext += " " + gathering.unitCount + " havainto(a)\n";
+    }
+
+    return plaintext;
+}
 
 // --------------------------------------------------------------------
 // Uploads
