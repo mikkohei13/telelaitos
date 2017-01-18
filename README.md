@@ -10,8 +10,11 @@ Set keys to .env:
 	LAJI_TOKEN=your-api.laji.fi-token
 	TELEGRAM_LAJIBOT_TOKEN=your-telegram-bot-token
 	CRONITOR_PING_ID=ping-id
+	LATESTID_FILENAME=latestid.prod.txt
 
 Set keys to Heroku dashboard app settings: https://dashboard.heroku.com/apps/
+
+On development server change latestid.prod.txt to latestid.dev.txt, which won't be committed to Heroku.
 
 Run locally:
 
@@ -43,7 +46,7 @@ Crontab:
 TODO
 ====
 
-- Modularize Cronitor, Don't stop on error-+
-- Functionalize vihkolatest handling
-- Prettyprint latest observations
+- Description
+- Don't stop on cronitor error
+- Latest observations with gathering date and document team
 
