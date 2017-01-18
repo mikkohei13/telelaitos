@@ -101,32 +101,56 @@ function getVihkolatest(data) {
 
 function getNewUnitsData(documentsArray) {
 
-    let latestDocumentId = null;
-    let previousDocumentId = "not checked";
-    let newUnits = true;
+//    console.log(documentsArray);
+
+    const filename = "local/" + process.env.LATESTID_FILENAME;
+    const options = { "encoding" : "utf-8" };
+
+    let documentData;
+
+    let newUnits;
+    let documentsObj;
+    let totalUnitCount;
+
+    let latestDocumentId = documentsArray[0].document.documentId;
+    let previousDocumentId = fs.readFileSync(filename, options);
+
+    if (latestDocumentId != previousDocumentId) {
+        newUnits = true;
+        documentData = unitsToDocument(documentsArray, latestDocumentId);
+        documentsObj = documentData.documentsObj;
+        totalUnitCount = documentData.totalUnitCount;
+
+        fs.writeFileSync(filename, latestDocumentId, options);
+    }
+    else if (1 == parameters.queryParts.resend) {
+        newUnits = true;
+
+        documentData = unitsToDocument(documentsArray, latestDocumentId);
+        documentsObj = documentData.documentsObj;
+        totalUnitCount = documentData.totalUnitCount;
+    }
+    else {
+        newUnits = false;
+        documentsObj = {};
+        totalUnitCount = 0;
+    }
+
+    return {
+        "previousDocumentId" : previousDocumentId,
+        "latestDocumentId" : latestDocumentId,
+        "newUnits" : newUnits,
+        "totalUnitCount" : totalUnitCount,
+        "documentsObj" : documentsObj
+    };
+}
+
+function unitsToDocument(documentsArray, latestDocumentId) {
     let documentsObj = {};
     let totalUnitCount = 0;
-    const filename = "local/" + process.env.LATESTID_FILENAME;
 
     // Goes through units, each of which repeats it's parent gathering and document data.
     for (let i = 0; i < documentsArray.length; i++) {
-
-        // Run on first unit, to determine if it's from a new document or not
-        if (null == latestDocumentId) {
-            latestDocumentId = documentsArray[i].document.documentId;
-            if (1 != parameters.queryParts.resend) {
-                let options = { "encoding" : "utf-8" };
-                previousDocumentId = fs.readFileSync(filename, options);
-                if (previousDocumentId == latestDocumentId) {
-                    newUnits = false;
-                    break;
-                }
-                else {
-                    newUnits = true;
-                    fs.writeFileSync(filename, latestDocumentId, options);
-                }
-            }
-        }
 
         if (documentsArray[i].document.documentId == latestDocumentId) {
             if (typeof documentsObj[latestDocumentId] == "undefined") {
@@ -157,16 +181,15 @@ function getNewUnitsData(documentsArray) {
         else {
             break; // Break when first document ends
         }
+
     } // closes for
 
     return {
-        "previousDocumentId" : previousDocumentId,
-        "latestDocumentId" : latestDocumentId,
-        "newUnits" : newUnits,
-        "totalUnitCount" : totalUnitCount,
-        "documentsObj" : documentsObj
+        "documentsObj" : documentsObj,
+        "totalUnitCount" : totalUnitCount
     };
 }
+
 
 // --------------------------------------------------------------------
 // Uploads
